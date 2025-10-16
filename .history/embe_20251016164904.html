@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thư Gửi Em Bé</title>
+  <style>
+    /* Import font chữ dễ thương */
+    @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600&display=swap');
+
+    /* Thiết lập toàn cục */
+    :root {
+      --primary-color: #f8cdda;
+      /* Hồng phấn */
+      --secondary-color: #ffffff;
+      /* Trắng */
+      --bg-color: #fdecf2;
+      /* Hồng rất nhạt */
+      --text-color: #5b5b5b;
+      /* Xám đậm */
+      --shadow-color: rgba(240, 153, 184, 0.2);
+      --heart-color: #e23b4e;
+      /* Màu đỏ của trái tim */
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background: var(--bg-color);
+      font-family: 'Quicksand', sans-serif;
+      perspective: 1500px;
+      /* Tăng chiều sâu cho hiệu ứng 3D */
+      overflow: hidden;
+    }
+
+    /* Vùng chứa phong bì */
+    .envelope-wrapper {
+      position: relative;
+      cursor: pointer;
+      transition: transform 0.5s ease, filter 0.5s ease;
+      transform-style: preserve-3d;
+    }
+
+    .envelope-wrapper:hover {
+      transform: translateY(-15px) rotateX(10deg) rotateY(3deg);
+      /* Hiệu ứng 3D rõ hơn */
+      filter: drop-shadow(0 20px 30px var(--shadow-color));
+    }
+
+    /* Hiệu ứng tỏa sáng "long lanh" */
+    .envelope-wrapper::after {
+      content: '';
+      position: absolute;
+      inset: -15px;
+      /* Vùng tỏa sáng */
+      border-radius: 20px;
+      background: transparent;
+      box-shadow: 0 0 20px 5px var(--primary-color), 0 0 40px 10px rgba(255, 255, 255, 0.7);
+      opacity: 0;
+      animation: glowing 3s infinite alternate ease-in-out;
+      z-index: -1;
+      transition: opacity 0.5s;
+    }
+
+    .envelope-wrapper:hover::after {
+      opacity: 0.8;
+    }
+
+    @keyframes glowing {
+      from {
+        opacity: 0.3;
+      }
+
+      to {
+        opacity: 0.8;
+      }
+    }
+
+    /* Container của phong bì */
+    .envelope {
+      position: relative;
+      width: 340px;
+      height: 220px;
+      transform-style: preserve-3d;
+      transition: transform 1s ease-in-out;
+    }
+
+    /* Mặt sau phong bì */
+    .envelope-back {
+      position: absolute;
+      inset: 0;
+      background-color: var(--primary-color);
+      border-radius: 10px;
+      box-shadow: 0 4px 15px var(--shadow-color);
+    }
+
+    /* Lá thư bên trong */
+    .letter {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      width: 320px;
+      height: 200px;
+      background: var(--secondary-color);
+      border-radius: 8px;
+      box-shadow: 0 0 30px var(--shadow-color);
+      z-index: 5;
+      opacity: 0;
+      transform: scale(0.5) rotateZ(-5deg);
+      /* Bắt đầu nhỏ và nghiêng */
+      /* Transition cho việc ĐÓNG thư (mặc định) */
+      transition: transform 0.7s cubic-bezier(0.4, 0.0, 0.2, 1),
+        opacity 0.4s ease-out,
+        height 0.7s cubic-bezier(0.4, 0.0, 0.2, 1);
+      transition-delay: 0s;
+      /* Không có độ trễ khi đóng */
+    }
+
+    /* Các nắp gập của phong bì */
+    .flap {
+      position: absolute;
+      top: 0;
+      width: 50.5%;
+      height: 100%;
+      background-color: #f7bed6;
+      z-index: 10;
+      /* Transition cho việc ĐÓNG thư */
+      transition: transform 0.8s cubic-bezier(0.4, 0.0, 0.2, 1);
+      transition-delay: 0.5s;
+      /* Trễ để đợi thư thu nhỏ lại */
+    }
+
+    .flap.left {
+      left: 0;
+      transform-origin: left;
+      border-radius: 10px 0 0 10px;
+      border-right: 1px solid var(--bg-color);
+    }
+
+    .flap.right {
+      right: 0;
+      transform-origin: right;
+      border-radius: 0 10px 10px 0;
+      border-left: 1px solid var(--bg-color);
+    }
+
+    /* Trái tim niêm phong */
+    .heart {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 40px;
+      height: 40px;
+      background-color: var(--heart-color);
+      z-index: 11;
+      clip-path: polygon(50% 100%, 0 35%, 15% 0, 50% 25%, 85% 0, 100% 35%);
+      /* Transition cho việc ĐÓNG thư */
+      transition: transform 0.5s cubic-bezier(0.4, 0.0, 0.2, 1),
+        opacity 0.5s ease-out;
+      transition-delay: 0.9s;
+      /* Trễ để đợi phong bì đóng lại */
+    }
+
+    /* Nội dung thư */
+    .letter-content {
+      width: 100%;
+      height: 100%;
+      box-sizing: border-box;
+      padding: 20px;
+      overflow-y: auto;
+      color: var(--text-color);
+      border-radius: 8px;
+    }
+
+    .letter-content::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .letter-content::-webkit-scrollbar-track {
+      background: var(--bg-color);
+      border-radius: 3px;
+    }
+
+    .letter-content::-webkit-scrollbar-thumb {
+      background: var(--primary-color);
+      border-radius: 3px;
+    }
+
+    .letter-content h3 {
+      margin: 0 0 10px 0;
+      font-size: 1.2em;
+      color: var(--primary-color);
+    }
+
+    .letter-content p {
+      margin: 0 0 10px 0;
+      line-height: 1.6;
+      font-size: 0.95em;
+    }
+
+    .letter-content p:last-child {
+      margin-bottom: 0;
+    }
+
+    .letter-content .signature {
+      text-align: right;
+      font-weight: 600;
+      font-style: italic;
+      margin-top: 15px;
+    }
+
+    /* --- Trạng thái khi mở --- */
+    /* Ghi đè các transition-delay để tạo hiệu ứng MỞ thư */
+    .envelope-wrapper.open .flap {
+      transition-delay: 0s;
+    }
+
+    .envelope-wrapper.open .heart {
+      transition-delay: 0s;
+    }
+
+    .envelope-wrapper.open .letter {
+      transition-delay: 0.6s;
+      /* Trễ để đợi phong bì mở ra */
+      /* Dùng hiệu ứng nảy đáng yêu khi mở */
+      transition-timing-function: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .envelope-wrapper.open .flap.left {
+      transform: rotateY(-160deg);
+    }
+
+    .envelope-wrapper.open .flap.right {
+      transform: rotateY(160deg);
+    }
+
+    .envelope-wrapper.open .heart {
+      transform: translate(-50%, -50%) scale(1.5);
+      opacity: 0;
+      transition-duration: 0.4s;
+      /* Biến mất nhanh hơn */
+    }
+
+    .envelope-wrapper.open .letter {
+      opacity: 1;
+      transform: scale(1) translateY(-40px) rotateZ(0deg);
+      height: 380px;
+    }
+
+    /* Gợi ý cho người dùng */
+    .click-hint {
+      position: absolute;
+      bottom: -50px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: #aaa;
+      font-size: 14px;
+      animation: bounce 2s infinite;
+      transition: opacity 0.3s;
+    }
+
+    @keyframes bounce {
+
+      0%,
+      20%,
+      50%,
+      80%,
+      100% {
+        transform: translateX(-50%) translateY(0);
+      }
+
+      40% {
+        transform: translateX(-50%) translateY(-5px);
+      }
+
+      60% {
+        transform: translateX(-50%) translateY(-3px);
+      }
+    }
+
+    /* --- Hiệu ứng trái tim bay --- */
+    .floating-hearts {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      z-index: -1;
+      /* Luôn ở phía sau */
+    }
+
+    .heart-particle {
+      position: absolute;
+      bottom: -50px;
+      /* Bắt đầu từ dưới màn hình */
+      font-size: 20px;
+      color: var(--primary-color);
+      animation: floatUp 10s infinite linear;
+      opacity: 0;
+    }
+
+    .heart-particle::before {
+      content: '♥';
+      /* Ký tự trái tim */
+    }
+
+    @keyframes floatUp {
+      0% {
+        transform: translateY(0);
+        opacity: 1;
+      }
+
+      100% {
+        transform: translateY(-100vh);
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="floating-hearts"></div>
+
+  <div class="envelope-wrapper">
+    <div class="envelope">
+      <div class="envelope-back"></div>
+      <div class="letter">
+        <div class="letter-content">
+          <h3>Gửi em bé của anh,</h3>
+          <p>
+            Anh viết lá thư này không phải để biện minh, mà để thật lòng xin lỗi em. Có những lúc anh thật ngốc nghếch
+            phải không?
+          </p>
+          <p>
+            Xin lỗi vì những lúc anh còn vụng về, chưa đủ tinh tế để nhận ra em đang cần gì. Xin lỗi vì đôi khi sự vô
+            tâm của anh đã làm em phải buồn và suy nghĩ nhiều. Đôi khi anh mải mê với những chuyện đâu đâu mà quên mất
+            rằng em đang cần một bờ vai, một lời an ủi.
+          </p>
+          <p>
+            Nhưng anh muốn em biết một điều rằng, dù cho có bất cứ chuyện gì xảy ra, tình yêu anh dành cho em chưa bao
+            giờ ngừng lại, dù chỉ một chút. Mỗi khoảnh khắc, mỗi giây phút, hình ảnh của em luôn ở trong tâm trí anh.
+            Mỗi ngày trôi qua, anh lại thấy mình yêu em nhiều hơn.
+          </p>
+          <p>
+            Em là điều tuyệt vời nhất mà anh có, là món quà quý giá nhất mà cuộc sống đã ban tặng. Tha lỗi cho anh nhé?
+          </p>
+          <p class="signature">Yêu em rất nhiều,</p>
+        </div>
+      </div>
+      <div class="flap left"></div>
+      <div class="flap right"></div>
+      <div class="heart"></div>
+    </div>
+    <div class="click-hint">Nhấp vào để mở</div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const heartsContainer = document.querySelector('.floating-hearts');
+      const numberOfHearts = 20;
+
+      // Tạo các trái tim bay ngẫu nhiên
+      for (let i = 0; i < numberOfHearts; i++) {
+        const heart = document.createElement('div');
+        heart.classList.add('heart-particle');
+        heart.style.left = `${Math.random() * 100}vw`; // Vị trí ngang ngẫu nhiên
+        heart.style.animationDuration = `${Math.random() * 5 + 8}s`; // Thời gian bay ngẫu nhiên
+        heart.style.animationDelay = `${Math.random() * 5}s`; // Độ trễ ngẫu nhiên
+        heart.style.fontSize = `${Math.random() * 15 + 10}px`; // Kích thước ngẫu nhiên
+        heartsContainer.appendChild(heart);
+      }
+
+      // Xử lý sự kiện nhấp chuột vào phong bì
+      const envelopeWrapper = document.querySelector('.envelope-wrapper');
+      const clickHint = document.querySelector('.click-hint');
+
+      envelopeWrapper.addEventListener('click', () => {
+        envelopeWrapper.classList.toggle('open');
+
+        if (envelopeWrapper.classList.contains('open')) {
+          clickHint.style.opacity = '0';
+        } else {
+          clickHint.style.opacity = '1';
+        }
+      });
+    });
+  </script>
+
+</body>
+
+</html>
